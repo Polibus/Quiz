@@ -7,7 +7,7 @@ const results = [
   {
   id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
   "nick": "asdf",
-  "point": 18,
+  "score": 18,
   "total": 20,
   "type": "test1",
   "date": "21-11-2018",
@@ -15,7 +15,7 @@ const results = [
 {
   id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28bc',
 "nick": "kadf",
-"point": 15,
+"score": 15,
 "total": 20,
 "type": "test1",
 "date": "18-11-2018",
@@ -23,11 +23,11 @@ const results = [
 ];
 
 
-const Item = ({nick, type, point, date }) => (
+const Item = ({nick, type, score, date }) => (
 
   <View style={styles.item}>
     <Text style={styles.table} >{nick}</Text>
-    <Text style={styles.table} >{point}</Text>
+    <Text style={styles.table} >{score}</Text>
     <Text style={styles.table} >{type}</Text>
     <Text style={styles.table} >{date}</Text>
   </View>
@@ -39,7 +39,7 @@ function ResultScreen({navigation}) {
 
   const renderItem = ({ item }) => (
 
-     <Item nick={item.nick} point={item.point+"/"+item.total} type={item.type} date={item.date} />
+     <Item nick={item.nick} score={item.score+"/"+item.total} type={item.type} date={item.date} />
    );
 
 
