@@ -1,15 +1,42 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import {View, Text,StyleSheet, Button } from 'react-native';
-
 
 function Score({route, navigation}) {
 
-    const { points,test } = route.params;
+  const { points,questionLength,name,typ } = route.params;
+
+
+  useEffect(() => {
+    sendResult()
+  }, []);
+
+  const sendResult = async() => {
+    try {
+
+        await fetch('http://tgryl.pl/quiz/result', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nick: name,
+            score: points,
+            total: questionLength,
+            type:  typ
+          })
+        })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   return (
     <View style={styles.container}>
-        <Text style={styles.tekst}>Zdobyłeś: {JSON.stringify(points)}/{JSON.stringify(test)}</Text>
+        <Text style={styles.tekst}>Zdobyłeś: {points}/{questionLength}</Text>
         <View style={styles.footerButton} >
-              <Button onPress={()=>navigation.navigate('Home')} title="End" />
+              <Button onPress={()=>navigation.navigate('Home',{name: name})} title="End" />
         </View>
     </View>
   );

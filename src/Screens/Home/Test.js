@@ -1,126 +1,68 @@
-import * as React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet,ActivityIndicator,TouchableOpacity } from 'react-native';
 
 
-const question = [{
-    "question": "Kto zdobył złotą piłkę 2021",
-    "answers": [
-      {
-        "content":  "Messi",
-        "isCorrect": true
-      },
-      {
-        "content":  "Lewandowski",
-        "isCorrect": false
-      },
-      {
-        "content":  "Ronaldo",
-        "isCorrect": false
-      },
-      {
-        "content":  "Maguire",
-        "isCorrect": false
-    },
-  ]
-},
-{
-  "question": "Najstarszy piłkarz serie A",
-  "answers": [
-    {
-      "content":  "Giroud",
-      "isCorrect": false
-    },
-    {
-      "content":  "Quagliarella",
-      "isCorrect": false
-    },
-    {
-      "content":  "Ibrahimović",
-      "isCorrect": true
-    },
-    {
-      "content":  "Ribéry",
-      "isCorrect": false
-  },
-]
-},
-{
-  "question": "Najdroższy piłkarz świata",
-  "answers": [
-    {
-      "content":  "Mbappé",
-      "isCorrect": false
-    },
-    {
-      "content":  "Haaland",
-      "isCorrect": true
-    },
-    {
-      "content":  "Vinicius Junior",
-      "isCorrect": false
-    },
-    {
-      "content":  "Bellingham",
-      "isCorrect": false
-  },
-]
-},
-
-
-]
-
-
-function Test({ navigation}) {
-  const [test, setTest] = React.useState([])
-   const [questionNumber, setQuestionNumber] = React.useState(0)
+function Test({ navigation,route}) {
    let points = React.useRef(0)
+   const { name,idParam } = route.params;
+   const [isLoading, setLoading] = useState(true);
+   const [value, setValue] = useState(0);
+   const [data, setData] = useState(0);
+   
 
-   useEffect(() => {
-    setTest(question)
-}, [])
-
-function handleOnPress(answerNumber){
-  if(test[questionNumber].answers[answerNumber].isCorrect===true){
-      points.current++
+   const getTest = async () => {
+    try {
+     const res = await fetch(`https://tgryl.pl/quiz/test/${idParam}`)
+     const results = await res.json()
+     setData(results);
+   } catch (error) {
+     console.error(error);
+   } finally {
+     setLoading(false);
+   }
   }
-  if(questionNumber+1===test.length){
-      setQuestionNumber(0)
-      navigation.navigate('Score',{points: points.current,test:test.length});
-      points.current=0
-      return
+  
+  
+  useEffect(() => {
+    getTest();
+  }, []);
+
+
+  const handleOnPress = (answerNumber) =>{
+
+    if(value < (data.tasks.length-1)){
+      if(data.tasks[value].answers[answerNumber].isCorrect){
+        points.current++
+      }
+      setValue(value+1)
+    }else{
+      setValue(0)
+      navigation.navigate('Score', { points: points.current, questionLength: data.tasks.length ,name:name, typ: data.name})
+      points.current = 0
+    }
+  
   }
-  setQuestionNumber(questionNumber+1);
-}
 
-  return (
-        test.length > 0 ? (
-               <View style={{ flex: 1 }}>
-                   <View  style={styles.quest}>
-                       <Text style={styles.text}>{test[questionNumber].question}</Text>
-                   </View>
+return(
+  <View style={styles.container}>
+    {isLoading ? <ActivityIndicator/> : (
+      <View>
+    <View style={styles.quest}>
+      <Text style={styles.text}>{data.tasks[value].question}</Text>
+    </View>
 
-                   <TouchableHighlight style={styles.button} onPress={() => handleOnPress(0)}>
-                       <Text style={styles.text_answer}>{test[questionNumber].answers[0].content}</Text>
-                   </TouchableHighlight>
-
-                   <TouchableHighlight style={styles.button} onPress={() => handleOnPress(1)}>
-                       <Text style={styles.text_answer}>{test[questionNumber].answers[1].content}</Text>
-                   </TouchableHighlight>
-
-                   <TouchableHighlight style={styles.button} onPress={() => handleOnPress(2)}>
-                       <Text style={styles.text_answer}>{test[questionNumber].answers[2].content}</Text>
-                   </TouchableHighlight>
-
-                   <TouchableHighlight style={styles.button} onPress={() => handleOnPress(3)}>
-                       <Text style={styles.text_answer}>{test[questionNumber].answers[3].content}</Text>
-                   </TouchableHighlight>
-               </View>
-           ) : <Text>Loading...</Text>
-
-  );
-}
+    <View style={styles.answers}>
+        <View style={styles.column}>
+          {data.tasks[value].answers.map((element, i) => {
+            return <TouchableOpacity  key={i} style={styles.button} onPress={() => handleOnPress(i)}>
+                        <Text style={styles.text_answer}>{data.tasks[value].answers[i].content}</Text>
+                   </TouchableOpacity>
+          })}
+        </View>
+    </View>
+    </View>)}
+  </View>)
+};
 
 const styles = StyleSheet.create({
   quest: {
@@ -132,14 +74,12 @@ const styles = StyleSheet.create({
   text: {
       textAlign: 'center',
       fontSize: 30,
-      fontWeight: 'bold',
-      letterSpacing: 0.25,
       color: 'black',
+      fontFamily: 'ChivoMono-Italic-VariableFont_wght'
   },
   text_answer: {
-      fontSize: 30,
-      fontWeight: 'bold',
-      letterSpacing: 0.25,
+      fontSize: 20,
+      fontFamily: 'Caveat-VariableFont_wght',
       color: 'white',
   },
   button: {

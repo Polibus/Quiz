@@ -1,104 +1,56 @@
 import * as React from 'react';
-import { FlatList,  View,  StyleSheet, Text} from 'react-native';
+import { FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { useEffect, useState } from 'react';
 
+import ResultBody from './ResultBody';
 
+function ResultScreen(props) {
 
-const results = [
-  {
-  id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-  "nick": "asdf",
-  "score": 18,
-  "total": 20,
-  "type": "test1",
-  "date": "21-11-2018",
-},
-{
-  id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28bc',
-"nick": "kadf",
-"score": 15,
-"total": 20,
-"type": "test1",
-"date": "18-11-2018",
-},
-];
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
 
+  useEffect( () => {getResult()
+  }, [])
 
-const Item = ({nick, type, score, date }) => (
-
-  <View style={styles.item}>
-    <Text style={styles.table} >{nick}</Text>
-    <Text style={styles.table} >{score}</Text>
-    <Text style={styles.table} >{type}</Text>
-    <Text style={styles.table} >{date}</Text>
-  </View>
-);
-
-
-
-function ResultScreen({navigation}) {
+  const getResult = async() => {
+    setLoading(true);
+    try{
+      const res = await (await fetch('http://tgryl.pl/quiz/results')).json();
+      setResults(res);
+    }
+    catch(error){
+      console.log(error);
+    }
+    setLoading(false);
+  }
 
   const renderItem = ({ item }) => (
+      <ResultBody result={item} navigation={props.navigation} />
+  );
 
-     <Item nick={item.nick} score={item.score+"/"+item.total} type={item.type} date={item.date} />
-   );
-
-
-
+  
   return (
-    <View style={{ flex: 1, flexDirection:'column', alignItems: 'center', justifyContent: 'center' }}>
-    <View style={{    backgroundColor: 'white',
-        padding: 20,
-        flexDirection: 'row',
-        height: 50,
-        width: 400,}}>
-
-         <Text style={styles.title} >Nick</Text>
-         <Text style={styles.title} >Point</Text>
-         <Text style={styles.title} >Type</Text>
-         <Text style={styles.title} >Date</Text>
-         </View>
-
-         <FlatList
-     data={results}
-     renderItem={renderItem}
-     keyExtractor={item => item.id}
-   />
-   </View>
+    <FlatList
+      refreshControl={
+        <RefreshControl
+          loading={loading}
+          onRefresh={getResult}
+        />
+      }
+      style={styles.container}
+      data={results}
+      renderItem={renderItem}
+      keyExtractor={item=>item.id}
+    />
 
   );
 }
 
 const styles = StyleSheet.create({
-  item: {
+  container:{
+    flex: 1,
     backgroundColor: 'white',
-    padding: 20,
-    width: 400,
-    height: 50,
-    flex:3,
-    flexDirection: 'row',
-
   },
-  table: {
-      flex: 1,
-      backgroundColor: 'white',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      height: 60,
-      fontSize: 15,
-      fontWeight: 'bold'
-  },
+})
 
-  title: {
-      flex: 1,
-      backgroundColor: 'white',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      height: 40,
-      fontSize: 20,
-      color: 'black',
-      fontWeight: 'bold'
-}
-});
-
-
-export default ResultScreen
+export default ResultScreen;

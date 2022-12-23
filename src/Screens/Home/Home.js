@@ -1,30 +1,53 @@
-import * as React from 'react';
-import { View, Text,StyleSheet,Button,TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text,StyleSheet,Button,TouchableOpacity,FlatList,ActivityIndicator } from 'react-native';
 
 
-function Home({navigation}) {
+function Home({navigation,route}) {
 
-    return (
-        <View style={styles.container}>
-                <TouchableOpacity style={styles.barContainer} onPress={()=>navigation.navigate('Test')}>
-                         <Text style={styles.title} >Title test #1</Text>
-                         <Text style={styles.tag} >#tag1</Text>
-                         <Text style={styles.text} >text</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.barContainer} onPress={()=>navigation.navigate('Test')}>
-                     <Text style={styles.title} >Title test #2</Text>
-                     <Text style={styles.tag} >#tag1</Text>
-                     <Text style={styles.text} >text</Text>
-                </TouchableOpacity>
- 
-                <View style={styles.footer} >
-                     <Text style={styles.footerTitle} >Get to Know your ranking result</Text>
-                     <View style={styles.footerButton} >
-                        <Button onPress={()=>navigation.navigate('Result')} title="Check!" />
-                     </View>
-                </View>
-              </View>
-       );  
+  const [isLoading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const {name} = route.params;
+
+  const getQuiz = async () => {
+    try {
+     const res = await (await fetch('https://tgryl.pl/quiz/tests')).json();
+     setData(res);
+   } catch (error) {
+     console.error(error);
+   } finally {
+     setLoading(false);
+   }
+ }
+
+
+ useEffect(() => {
+  getQuiz();
+}, []);
+
+
+return (
+  <View style={styles.container}>
+    {isLoading ? <ActivityIndicator/> : (
+        <FlatList
+          data={data}
+          keyExtractor={({ id }, index) => id}
+          renderItem={({ item }) => (
+          <TouchableOpacity style={styles.barContainer} onPress={()=>navigation.navigate('Test',{name: name,idParam: item.id})}>  
+            <Text style={styles.title} >{item.name}</Text>
+            <Text style={styles.tag} >{item.tags[0]}, {item.tags[1]}, {item.tags[2]}</Text>
+            <Text style={styles.text} >{item.description}</Text>
+          </TouchableOpacity>    
+          )}
+        />
+    )}
+      <View style={styles.footer} >
+                <Button style={styles.footerButton} onPress={()=>navigation.navigate('Result')} title="Check!" />
+      </View>
+    </View>
+  
+  
+);
+
 };
 
 const styles = StyleSheet.create({
@@ -40,39 +63,41 @@ const styles = StyleSheet.create({
             margin: 10,
           },
     footer: {
-       flex: 0.2,
-       borderWidth: 2,
-       margin: 10,
+       flex: 2,
+       margin: 2,
+  
     },
     footerTitle: {
       padding: 10,
        textAlign: 'center',
-       flex: 0.4,
-       fontWeight: 'bold',
+       flex: 1,
+       fontFamily: 'ChivoMono-Italic-VariableFont_wght',
        color: 'black',
-       fontSize: 20,
+       fontSize: 15,
     },
   
     footerButton: {
-         flex: 0.7,
+         flex: 1,
       },
   
       title: {
         flex: 0.3,
-        fontWeight: 'bold',
         color: 'black',
-        fontSize: 20,
+        fontSize: 14,
+        textAlign:'center',
+        fontFamily: 'ChivoMono-Italic-VariableFont_wght'
       },
       tag: {
         flex: 0.2,
         color: '#69d5ff',
-        fontWeight: 'bold',
         fontSize: 15,
+        fontFamily: 'Caveat-VariableFont_wght'
       },
       text: {
-        flex: 0.2,
+        flex: 0.5,
         color: 'black',
-        fontSize: 15,
+        fontSize: 12,
+        fontFamily: 'ChivoMono-Italic-VariableFont_wght'
       },
     });
 

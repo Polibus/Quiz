@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function App() {
   let [loading, setLoading] = useState(true)
-  let [ifOpening, setIfOpening] = useState(true)
+  let [ifOpening, setIfOpening] = useState(false)
   let FirstOpening = async () => {
     let Fopening = await AsyncStorage.getItem('Regulation')
     if(Fopening === null)
